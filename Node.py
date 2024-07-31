@@ -20,6 +20,7 @@ class Node:
         self.color = WHITE
         self.neighbors = []
         self.width = width
+        self.weight = 0
         self.total_rows = total_rows
     
     def get_pos(self):

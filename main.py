@@ -17,6 +17,7 @@ def h(p1,p2):
 def reconstruct_path(came_from, current, draw):
     while current in came_from:
         current = came_from[current]
+        current.weight += 1
         current.make_path()
         draw()
 
@@ -43,15 +44,13 @@ def algorithm(draw, grid, start, end):
         if current == end:
             reconstruct_path(came_from, end, draw)
             end.make_end()
-            return True
-        
+            return True        
         for neighbor in current.neighbors:
             temp_g_score = g_score[current] + 1
-
             if temp_g_score < g_score[neighbor]:
                 came_from[neighbor] = current
                 g_score[neighbor] = temp_g_score
-                f_score[neighbor] = temp_g_score + h(neighbor.get_pos(), end.get_pos())
+                f_score[neighbor] = temp_g_score + h(neighbor.get_pos(), end.get_pos()) + current.weight
                 if neighbor not in open_set_hash:
                     count += 1
                     open_set.put((f_score[neighbor], count, neighbor))
@@ -59,8 +58,7 @@ def algorithm(draw, grid, start, end):
                     neighbor.make_open()        
         draw()
         if current != start:
-            current.make_close()
-    
+            current.make_close()    
     return False
 
 def make_grid(rows, width):
@@ -143,10 +141,8 @@ def main(win, width):
                 if event.key == pygame.K_SPACE and start and end:
                     for row in grid:
                         for node in row:
-                            node.update_neighbors(grid)
-                    
+                            node.update_neighbors(grid)                    
                     algorithm(lambda: draw(win, grid, ROWS, width), grid, start, end)
-
                 if event.key == pygame.K_c:
                     start = None
                     end = None

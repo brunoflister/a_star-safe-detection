@@ -42,15 +42,17 @@ class Node:
         return self.color == TURQUOISE
     
     def reset(self):
+        self.weight = 0        
         self.color = WHITE
 
     def make_close(self):
-        self.color = RED
+        self.color = GREY
     
     def make_open(self):
         self.color = GREEN
     
     def make_barrier(self):
+        self.weight = 100
         self.color = BLACK
     
     def make_start(self):
@@ -59,8 +61,8 @@ class Node:
     def make_end(self):
         self.color = TURQUOISE
     
-    def make_path(self):
-        self.color = PURPLE
+    def make_path(self, color):
+        self.color = color
     
     def draw(self, win):
         pygame.draw.rect(win, self.color, (self.x,self.y, self.width, self.width))
@@ -69,15 +71,28 @@ class Node:
         self.neighbors = []
         if self.row < self.total_rows - 1 and not grid[self.row + 1][self.col].is_barrier():
             self.neighbors.append(grid[self.row + 1][self.col])
+        elif self.row < self.total_rows - 1 and grid[self.row + 1][self.col].is_barrier():
+            self.weight_increase()
         
         if self.row > 0 and not grid[self.row-1][self.col].is_barrier():
             self.neighbors.append(grid[self.row-1][self.col])
+        elif self.row > 0 and grid[self.row-1][self.col].is_barrier():
+            self.weight_increase()
 
         if self.col < self.total_rows - 1 and not grid[self.row][self.col + 1].is_barrier():
             self.neighbors.append(grid[self.row][self.col + 1])
+        elif self.col < self.total_rows - 1 and grid[self.row][self.col + 1].is_barrier():
+            self.weight_increase()
 
         if self.col > 0 and not grid[self.row][self.col - 1].is_barrier():
             self.neighbors.append(grid[self.row][self.col - 1])
+        elif self.col > 0 and grid[self.row][self.col - 1].is_barrier():
+            self.weight_increase()
+
+    def weight_increase(self):
+        self.weight += 10
+        if self.weight >= 100:
+            self.weight = 100
 
     def __lt__(self, other):
         return False

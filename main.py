@@ -1,12 +1,12 @@
 import pygame
-import math
+import numpy as np
 import random
 from queue import PriorityQueue
 import Node
 
 WIDTH = 800
 WIN = pygame.display.set_mode((WIDTH, WIDTH))
-B_RATE = 0.25
+B_RATE = 0.10
 pygame.display.set_caption("A* Path Finding Algorithm")
     
 def h(p1,p2):
@@ -15,10 +15,11 @@ def h(p1,p2):
     return abs(x1-x2) + abs(y1-y2)
 
 def reconstruct_path(came_from, current, draw):
+    color = list(np.random.choice(range(256), size=3))
     while current in came_from:
         current = came_from[current]
-        current.weight += 1
-        current.make_path()
+        current.weight_increase()        
+        current.make_path(color)
         draw()
 
 def algorithm(draw, grid, start, end):
@@ -36,11 +37,9 @@ def algorithm(draw, grid, start, end):
     while not open_set.empty():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
-        
+                pygame.quit()        
         current = open_set.get()[2]
         open_set_hash.remove(current)
-
         if current == end:
             reconstruct_path(came_from, end, draw)
             end.make_end()
@@ -55,9 +54,9 @@ def algorithm(draw, grid, start, end):
                     count += 1
                     open_set.put((f_score[neighbor], count, neighbor))
                     open_set_hash.add(neighbor)
-                    neighbor.make_open()        
+                    #neighbor.make_open()        
         draw()
-        if current != start:
+        if current != start and current.color == Node.WHITE:
             current.make_close()    
     return False
 
@@ -103,7 +102,7 @@ def random_barrier(grid,rows, width):
 
 #gameloop
 def main(win, width):
-    ROWS = 50
+    ROWS = 25
     grid = make_grid(ROWS, width)
     start = None
     end = None
@@ -114,7 +113,6 @@ def main(win, width):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-
             if pygame.mouse.get_pressed()[0]:
                 pos = pygame.mouse.get_pos()
                 row, col = get_clicked_pos(pos, ROWS, width)
@@ -135,8 +133,7 @@ def main(win, width):
                 if node == start:
                     start = None
                 if node == end:
-                    end = None
-            
+                    end = None            
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE and start and end:
                     for row in grid:

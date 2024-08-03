@@ -15,7 +15,7 @@ def h(p1,p2):
     return abs(x1-x2) + abs(y1-y2)
 
 def reconstruct_path(came_from, current, draw):
-    color = list(np.random.choice(range(256), size=3))
+    color = list(np.random.choice(range(50,200), size=3))
     while current in came_from:
         current = came_from[current]
         current.weight_increase()        
@@ -85,6 +85,17 @@ def draw(win, grid, rows, width):
     draw_grid(win, rows, width)
     pygame.display.update()
 
+def heatmap(win, grid, rows, width):
+    win.fill(Node.WHITE)
+    for row in grid:
+        for node in row:
+            if node.is_barrier():
+                node.draw(win)
+            else:
+                node.draw_heat(win)    
+    draw_grid(win, rows, width)
+    pygame.display.update()
+
 def get_clicked_pos(pos, rows, width):
     gap = width // rows
     y,x = pos
@@ -102,14 +113,18 @@ def random_barrier(grid,rows, width):
 
 #gameloop
 def main(win, width):
-    ROWS = 25
+    ROWS = 50
     grid = make_grid(ROWS, width)
     start = None
     end = None
     run = True
+    heat = False
     random_barrier(grid, ROWS, width)    
     while run:
-        draw(win, grid, ROWS, width)
+        if heat == True:
+            heatmap(win, grid, ROWS, width)
+        else:
+            draw(win, grid, ROWS, width)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
@@ -140,6 +155,8 @@ def main(win, width):
                         for node in row:
                             node.update_neighbors(grid)                    
                     algorithm(lambda: draw(win, grid, ROWS, width), grid, start, end)
+                if event.key == pygame.K_h:
+                    heat = not heat
                 if event.key == pygame.K_c:
                     start = None
                     end = None

@@ -3,12 +3,13 @@ import pygame
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
+LIGHT_BLUE = (127, 191, 255)
 YELLOW = (255, 255, 0)
 WHITE = (255, 255, 255)
 BLACK = (0,0,0)
 PURPLE = (128,0,128)
 ORANGE = (255,121,0)
-GREY = (128,128,128)
+GREY = (158,158,158)
 TURQUOISE = (0, 255, 255)
 
 class Node:
@@ -18,6 +19,7 @@ class Node:
         self.x = row * width
         self.y = col * width
         self.color = WHITE
+        self.heat = LIGHT_BLUE
         self.neighbors = []
         self.width = width
         self.weight = 0
@@ -53,7 +55,7 @@ class Node:
     
     def make_barrier(self):
         self.weight = 100
-        self.color = BLACK
+        self.color = BLACK        
     
     def make_start(self):
         self.color = ORANGE
@@ -67,32 +69,38 @@ class Node:
     def draw(self, win):
         pygame.draw.rect(win, self.color, (self.x,self.y, self.width, self.width))
     
+    def draw_heat(self, win):
+        pygame.draw.rect(win, self.heat, (self.x,self.y, self.width, self.width))
+    
     def update_neighbors(self, grid):
         self.neighbors = []
+        init_weight = self.weight
         if self.row < self.total_rows - 1 and not grid[self.row + 1][self.col].is_barrier():
             self.neighbors.append(grid[self.row + 1][self.col])
-        elif self.row < self.total_rows - 1 and grid[self.row + 1][self.col].is_barrier():
+        elif self.row < self.total_rows - 1 and grid[self.row + 1][self.col].is_barrier() and init_weight < 10:
             self.weight_increase()
         
         if self.row > 0 and not grid[self.row-1][self.col].is_barrier():
             self.neighbors.append(grid[self.row-1][self.col])
-        elif self.row > 0 and grid[self.row-1][self.col].is_barrier():
+        elif self.row > 0 and grid[self.row-1][self.col].is_barrier() and init_weight < 10:
             self.weight_increase()
 
         if self.col < self.total_rows - 1 and not grid[self.row][self.col + 1].is_barrier():
             self.neighbors.append(grid[self.row][self.col + 1])
-        elif self.col < self.total_rows - 1 and grid[self.row][self.col + 1].is_barrier():
+        elif self.col < self.total_rows - 1 and grid[self.row][self.col + 1].is_barrier() and init_weight < 10:
             self.weight_increase()
 
         if self.col > 0 and not grid[self.row][self.col - 1].is_barrier():
             self.neighbors.append(grid[self.row][self.col - 1])
-        elif self.col > 0 and grid[self.row][self.col - 1].is_barrier():
+        elif self.col > 0 and grid[self.row][self.col - 1].is_barrier() and init_weight < 10:
             self.weight_increase()
 
     def weight_increase(self):
         self.weight += 10
         if self.weight >= 100:
             self.weight = 100
+        f = 1 - self.weight/100
+        self.heat = (127 * f, 191 * f, 63 + 192 * f)
 
     def __lt__(self, other):
         return False

@@ -109,7 +109,12 @@ def random_barrier(grid,rows, width):
         x = random.randint(0, width-1) // gap
         y = random.randint(0, width-1) // gap
         node = grid[x][y]
-        node.make_barrier()     
+        node.make_barrier()
+
+def up_neigh(grid):
+    for row in grid:
+        for node in row:
+            node.update_neighbors(grid)      
 
 #gameloop
 def main(win, width):
@@ -119,7 +124,8 @@ def main(win, width):
     end = None
     run = True
     heat = False
-    random_barrier(grid, ROWS, width)    
+    random_barrier(grid, ROWS, width)
+    up_neigh(grid)
     while run:
         if heat == True:
             heatmap(win, grid, ROWS, width)
@@ -140,6 +146,7 @@ def main(win, width):
                     end.make_end()
                 elif node != end and node != start:
                     node.make_barrier()
+                    up_neigh(grid)
             elif pygame.mouse.get_pressed()[2]:
                 pos = pygame.mouse.get_pos()
                 row, col = get_clicked_pos(pos, ROWS, width)

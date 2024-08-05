@@ -44,7 +44,10 @@ class Node:
         return self.color == TURQUOISE
     
     def reset(self):
-        self.weight = 0        
+        if self.color == BLACK:
+            for n in self.neighbors:
+                n.weight_decrease()
+            self.weight = 0        
         self.color = WHITE
 
     def make_close(self):
@@ -55,7 +58,8 @@ class Node:
     
     def make_barrier(self):
         self.weight = 100
-        self.color = BLACK        
+        self.color = BLACK
+        #self.obstacle_propagation()        
     
     def make_start(self):
         self.color = ORANGE
@@ -71,6 +75,13 @@ class Node:
     
     def draw_heat(self, win):
         pygame.draw.rect(win, self.heat, (self.x,self.y, self.width, self.width))
+
+    def obstacle_propagation(self):
+        for n in self.neighbors:
+            for i in range(2):
+                n.weight_increase()
+            for m in n.neighbors:
+                m.weight_increase()
     
     def update_neighbors(self, grid):
         self.neighbors = []
@@ -99,6 +110,13 @@ class Node:
         self.weight += 10
         if self.weight >= 100:
             self.weight = 100
+        f = 1 - self.weight/100
+        self.heat = (127 * f, 191 * f, 63 + 192 * f)
+    
+    def weight_decrease(self):
+        self.weight -= 10
+        if self.weight <= 0 :
+            self.weight = 0
         f = 1 - self.weight/100
         self.heat = (127 * f, 191 * f, 63 + 192 * f)
 

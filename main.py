@@ -7,6 +7,7 @@ import Node
 WIDTH = 800
 WIN = pygame.display.set_mode((WIDTH, WIDTH))
 B_RATE = 0.10
+c_state = 0
 pygame.display.set_caption("A* Path Finding Algorithm")
     
 def h(p1,p2):
@@ -14,12 +15,20 @@ def h(p1,p2):
     x2, y2 = p2
     return abs(x1-x2) + abs(y1-y2)
 
-def reconstruct_path(came_from, current, draw):
-    color = list(np.random.choice(range(50,200), size=3))
+def reconstruct_path(came_from, start, current, draw):
+    global c_state
+    # Check if all predefined colors have been used
+    if c_state < len(Node.colors):
+        color = Node.colors[c_state]
+        c_state += 1
+    else:
+        color = list(np.random.choice(range(50, 200), size=3))
+    
     while current in came_from:
         current = came_from[current]
-        current.weight_increase()        
-        current.make_path(color)
+        current.weight_increase()
+        if(current != start):        
+            current.make_path(color)
         draw()
 
 def algorithm(draw, grid, start, end):
@@ -41,20 +50,20 @@ def algorithm(draw, grid, start, end):
         current = open_set.get()[2]
         open_set_hash.remove(current)
         if current == end:
-            reconstruct_path(came_from, end, draw)
+            reconstruct_path(came_from, start, end, draw)
             end.make_end()
             return True        
         for neighbor in current.neighbors:
-            temp_g_score = g_score[current] + 1
-            if temp_g_score < g_score[neighbor]:
-                came_from[neighbor] = current
-                g_score[neighbor] = temp_g_score
-                f_score[neighbor] = temp_g_score + h(neighbor.get_pos(), end.get_pos()) + current.weight
-                if neighbor not in open_set_hash:
-                    count += 1
-                    open_set.put((f_score[neighbor], count, neighbor))
-                    open_set_hash.add(neighbor)
-                    #neighbor.make_open()        
+            if neighbor != start:
+                temp_g_score = g_score[current] + 1
+                if temp_g_score < g_score[neighbor]:
+                    came_from[neighbor] = current
+                    g_score[neighbor] = temp_g_score
+                    f_score[neighbor] = temp_g_score + h(neighbor.get_pos(), end.get_pos()) + current.weight
+                    if neighbor not in open_set_hash:
+                        count += 1
+                        open_set.put((f_score[neighbor], count, neighbor))
+                        open_set_hash.add(neighbor)
         draw()
         if current != start and current.color == Node.WHITE:
             current.make_close()    
@@ -85,11 +94,11 @@ def draw(win, grid, rows, width):
     draw_grid(win, rows, width)
     pygame.display.update()
 
-def heatmap(win, grid, rows, width):
+def heatmap(win, grid, rows, width, start, end):
     win.fill(Node.WHITE)
     for row in grid:
         for node in row:
-            if node.is_barrier():
+            if node.is_barrier() or node == start or node == end:
                 node.draw(win)
             else:
                 node.draw_heat(win)    
@@ -128,7 +137,7 @@ def main(win, width):
     up_neigh(grid)
     while run:
         if heat == True:
-            heatmap(win, grid, ROWS, width)
+            heatmap(win, grid, ROWS, width, start, end)
         else:
             draw(win, grid, ROWS, width)
         for event in pygame.event.get():

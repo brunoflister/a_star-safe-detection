@@ -6,26 +6,10 @@ import Node
 
 WIDTH = 800
 WIN = pygame.display.set_mode((WIDTH, WIDTH))
-B_RATE = 0.10
+B_RATE = 0.05
 c_state = 0
-N_COEF = 5
 
 pygame.display.set_caption("A* Path Finding Algorithm")
-
-#deegre of danger from the article
-def danger_deegree(node, grid):
-    list = []
-    for row in grid:
-        for current in row:
-            if current.is_barrier():
-                p = 1 / (N_COEF*g(node.get_pos(), current.get_pos()) + 1)
-                list.append(p)
-    return max(list)
-
-def g(p1, p2):
-    x1, y1 = p1
-    x2, y2 = p2
-    return np.sqrt((x1-x2)**2 + (y1-y2)**2)
 
 def h(p1,p2):
     x1, y1 = p1
@@ -140,7 +124,7 @@ def random_barrier(grid,rows, width):
 def up_neigh(grid):
     for row in grid:
         for node in row:
-            node.update_neighbors(grid)      
+            node.danger_deegree(grid)      
 
 #gameloop
 def main(win, width):
@@ -195,6 +179,7 @@ def main(win, width):
                     end = None
                     grid = make_grid(ROWS, width)
                     random_barrier(grid, ROWS, width)
+                    up_neigh(grid)
 
     pygame.quit()
 

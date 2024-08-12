@@ -15,6 +15,13 @@ TURQUOISE = (6, 214, 160)
 
 colors = [RED, GREEN, BLUE, LIGHT_BLUE, YELLOW, PURPLE]
 
+N_COEF = 5
+
+def g(p1, p2):
+    x1, y1 = p1
+    x2, y2 = p2
+    return np.sqrt((x1-x2)**2 + (y1-y2)**2)
+
 class Node:
     def __init__(self, row, col, width, total_rows):
         self.row = row
@@ -85,63 +92,64 @@ class Node:
     
     def draw_heat(self, win):
         pygame.draw.rect(win, self.heat, (self.x,self.y, self.width, self.width))
-
-    def obstacle_propagation(self):
-        for n in self.neighbors:
-            for i in range(2):
-                n.weight_increase()
-            for m in n.neighbors:
-                m.weight_increase()
     
-    def update_neighbors(self, grid):
-        self.neighbors = []
+    def update_obstacle(self, grid):        
         init_weight = self.weight
-        
+        if self.row < self.total_rows - 1 and grid[self.row + 1][self.col].is_barrier() and init_weight < 10:
+            self.weight_increase()
+        if self.row > 0 and grid[self.row-1][self.col].is_barrier() and init_weight < 10:
+            self.weight_increase()
+        if self.col < self.total_rows - 1 and grid[self.row][self.col + 1].is_barrier() and init_weight < 10:
+            self.weight_increase()
+        if self.col > 0 and grid[self.row][self.col - 1].is_barrier() and init_weight < 10:
+            self.weight_increase()
+
+
+    def update_neighbors(self, grid):
+        self.neighbors = []        
         #bellow
         if self.row < self.total_rows - 1 and not grid[self.row + 1][self.col].is_barrier() and not grid[self.row + 1][self.col].is_full():
             self.neighbors.append(grid[self.row + 1][self.col])
-        elif self.row < self.total_rows - 1 and grid[self.row + 1][self.col].is_barrier() and init_weight < 10:
-            self.weight_increase()
-        
         #above
         if self.row > 0 and not grid[self.row-1][self.col].is_barrier() and not grid[self.row-1][self.col].is_full():
-            self.neighbors.append(grid[self.row-1][self.col])
-        elif self.row > 0 and grid[self.row-1][self.col].is_barrier() and init_weight < 10:
-            self.weight_increase()
-
+            self.neighbors.append(grid[self.row-1][self.col])      
         #right
         if self.col < self.total_rows - 1 and not grid[self.row][self.col + 1].is_barrier() and not grid[self.row][self.col + 1].is_full():
-            self.neighbors.append(grid[self.row][self.col + 1])
-        elif self.col < self.total_rows - 1 and grid[self.row][self.col + 1].is_barrier() and init_weight < 10:
-            self.weight_increase()
-
+            self.neighbors.append(grid[self.row][self.col + 1])       
         #left
         if self.col > 0 and not grid[self.row][self.col - 1].is_barrier() and not grid[self.row][self.col - 1].is_full():
             self.neighbors.append(grid[self.row][self.col - 1])
-        elif self.col > 0 and grid[self.row][self.col - 1].is_barrier() and init_weight < 10:
-            self.weight_increase()
+        
+    def color_heat(self):
+        f = 1 - self.weight/100        
+        base_color = np.array([173, 232, 244]) 
+        scaled_color = base_color * f
+        self.heat = tuple(scaled_color.astype(int))
 
     def weight_increase(self):
         self.weight += 15
         if self.weight >= 100:
             self.weight = 100
-        f = 1 - self.weight/100
-        
-        base_color = np.array([173, 232, 244]) 
-        scaled_color = base_color * f
-
-        self.heat = tuple(scaled_color.astype(int))
+        self.color_heat()
     
     def weight_decrease(self):
         self.weight -= 15
         if self.weight <= 0 :
             self.weight = 0
-        f = 1 - self.weight/100
-        
-        base_color = np.array([173, 232, 244]) 
-        scaled_color = base_color * f
+        self.color_heat()
 
-        self.heat = tuple(scaled_color.astype(int))
+    def danger_deegree(self, grid):
+        list = []
+        for row in grid:
+            for current in row:
+                if current.is_barrier():
+                    p = round(1 / (N_COEF*g(self.get_pos(), current.get_pos()) + 1) *100, 2)
+                    list.append(p)
+        if list:
+            self.weight += max(list)
+            if self.weight >= 100:
+                self.weight = 100
+        self.color_heat()
 
     def __lt__(self, other):
         return False

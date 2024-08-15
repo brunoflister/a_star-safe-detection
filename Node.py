@@ -33,6 +33,7 @@ class Node:
         self.neighbors = []
         self.width = width
         self.weight = 0
+        self.deg = 0
         self.total_rows = total_rows
         self.full = False
         self.path_count = 0
@@ -59,17 +60,13 @@ class Node:
         return self.full
     
     def reset(self):
-        if self.color == BLACK:
-            for n in self.neighbors:
-                n.weight_decrease()
-            self.weight = 0        
+        self.weight = 0        
         self.color = WHITE
 
     def make_close(self):
         self.color = GREY
     
     def make_barrier(self):
-        self.weight = 100
         self.color = BLACK
     
     def make_full(self):
@@ -93,7 +90,7 @@ class Node:
     def draw_heat(self, win):
         pygame.draw.rect(win, self.heat, (self.x,self.y, self.width, self.width))
     
-    def update_obstacle(self, grid):        
+    '''def update_obstacle(self, grid):        
         init_weight = self.weight
         if self.row < self.total_rows - 1 and grid[self.row + 1][self.col].is_barrier() and init_weight < 10:
             self.weight_increase()
@@ -102,8 +99,7 @@ class Node:
         if self.col < self.total_rows - 1 and grid[self.row][self.col + 1].is_barrier() and init_weight < 10:
             self.weight_increase()
         if self.col > 0 and grid[self.row][self.col - 1].is_barrier() and init_weight < 10:
-            self.weight_increase()
-
+            self.weight_increase()'''
 
     def update_neighbors(self, grid):
         self.neighbors = []        
@@ -121,7 +117,10 @@ class Node:
             self.neighbors.append(grid[self.row][self.col - 1])
         
     def color_heat(self):
-        f = 1 - self.weight/100        
+        sum = self.deg + self.weight
+        if(sum >= 100):
+            sum = 100
+        f = 1 - sum/100        
         base_color = np.array([173, 232, 244]) 
         scaled_color = base_color * f
         self.heat = tuple(scaled_color.astype(int))
@@ -138,18 +137,6 @@ class Node:
             self.weight = 0
         self.color_heat()
 
-    def danger_deegree(self, grid):
-        list = []
-        for row in grid:
-            for current in row:
-                if current.is_barrier():
-                    p = round(1 / (N_COEF*g(self.get_pos(), current.get_pos()) + 1) *100, 2)
-                    list.append(p)
-        if list:
-            self.weight += max(list)
-            if self.weight >= 100:
-                self.weight = 100
-        self.color_heat()
 
     def __lt__(self, other):
         return False

@@ -3,10 +3,11 @@ import numpy as np
 import random
 from queue import PriorityQueue
 import Node
+import Grid
 
 WIDTH = 800
 WIN = pygame.display.set_mode((WIDTH, WIDTH))
-B_RATE = 0.05
+B_RATE = 0.1
 c_state = 0
 
 pygame.display.set_caption("A* Path Finding Algorithm")
@@ -23,8 +24,7 @@ def reconstruct_path(came_from, start, current, draw):
         color = Node.colors[c_state]
         c_state += 1
     else:
-        color = list(np.random.choice(range(50, 200), size=3))
-    
+        color = list(np.random.choice(range(50, 200), size=3))    
     while current in came_from:
         current = came_from[current]
         current.weight_increase()
@@ -37,9 +37,9 @@ def algorithm(draw, grid, start, end):
     open_set = PriorityQueue()
     open_set.put((0, count, start))
     came_from = {}
-    g_score = {node: float("inf") for row in grid for node in row}
+    g_score = {node: float("inf") for row in grid.grid for node in row}
     g_score[start] = 0
-    f_score = {node: float("inf") for row in grid for node in row}
+    f_score = {node: float("inf") for row in grid.grid for node in row}
     f_score[start] = h(start.get_pos(), end.get_pos())
 
     open_set_hash = {start}
@@ -70,6 +70,7 @@ def algorithm(draw, grid, start, end):
             current.make_close()    
     return False
 
+'''
 def make_grid(rows, width):
     grid = []
     gap = width // rows
@@ -78,7 +79,7 @@ def make_grid(rows, width):
         for j in range(rows):
             node = Node.Node(i, j, gap, rows)
             grid[i].append(node)
-    return grid
+    return grid'''
 
 def draw_grid(win, rows, width):
     gap = width // rows
@@ -89,15 +90,15 @@ def draw_grid(win, rows, width):
 
 def draw(win, grid, rows, width):
     win.fill(Node.WHITE)
-    for row in grid:
+    for row in grid.grid:
         for node in row:
             node.draw(win)    
     draw_grid(win, rows, width)
     pygame.display.update()
 
-def heatmap(win, grid, rows, width, start, end):
+def draw_heatmap(win, grid, rows, width, start, end):
     win.fill(Node.WHITE)
-    for row in grid:
+    for row in grid.grid:
         for node in row:
             if node.is_barrier() or node == start or node == end:
                 node.draw(win)
@@ -113,11 +114,11 @@ def get_clicked_pos(pos, rows, width):
     col = x // gap
     return row, col
 
-def random_barrier(grid,rows, width):
-    gap = width // rows
+'''
+def random_barrier(grid, rows, width):
     for i in range(int(rows*rows*B_RATE)):
-        x = random.randint(0, width-1) // gap
-        y = random.randint(0, width-1) // gap
+        x = random.randint(0, rows-1)
+        y = random.randint(0, rows-1)      
         node = grid[x][y]
         node.make_barrier()
 
@@ -125,20 +126,21 @@ def up_neigh(grid):
     for row in grid:
         for node in row:
             node.danger_deegree(grid)      
+'''
 
 #gameloop
 def main(win, width):
     ROWS = 50
-    grid = make_grid(ROWS, width)
+    grid = Grid.Grid(ROWS, width)
     start = None
     end = None
     run = True
     heat = False
-    random_barrier(grid, ROWS, width)
-    up_neigh(grid)
+    grid.random_barrier()
+    grid.update_danger_deg()
     while run:
         if heat == True:
-            heatmap(win, grid, ROWS, width, start, end)
+            draw_heatmap(win, grid, ROWS, width, start, end)
         else:
             draw(win, grid, ROWS, width)
         for event in pygame.event.get():
@@ -147,7 +149,7 @@ def main(win, width):
             if pygame.mouse.get_pressed()[0]:
                 pos = pygame.mouse.get_pos()
                 row, col = get_clicked_pos(pos, ROWS, width)
-                node = grid[row][col]
+                node = grid.grid[row][col]
                 if not start and node != end:
                     start = node
                     start.make_start()
@@ -156,30 +158,30 @@ def main(win, width):
                     end.make_end()
                 elif node != end and node != start:
                     node.make_barrier()
-                    up_neigh(grid)
+                    grid.update_danger_deg()
             elif pygame.mouse.get_pressed()[2]:
                 pos = pygame.mouse.get_pos()
                 row, col = get_clicked_pos(pos, ROWS, width)
-                node = grid[row][col]
-                node.reset()
+                node = grid.grid[row][col]                
+                grid.reset_node(node)
                 if node == start:
                     start = None
                 if node == end:
                     end = None            
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE and start and end:
-                    for row in grid:
+                    for row in grid.grid:
                         for node in row:
-                            node.update_neighbors(grid)                    
+                            node.update_neighbors(grid.grid)                    
                     algorithm(lambda: draw(win, grid, ROWS, width), grid, start, end)
                 if event.key == pygame.K_h:
                     heat = not heat
                 if event.key == pygame.K_c:
                     start = None
                     end = None
-                    grid = make_grid(ROWS, width)
-                    random_barrier(grid, ROWS, width)
-                    up_neigh(grid)
+                    grid.reset_grid()
+                    grid.random_barrier()
+                    grid.update_danger_deg()
 
     pygame.quit()
 

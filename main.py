@@ -29,11 +29,7 @@ def reconstruct_path(came_from, start, current, draw):
     while current in came_from:
         total += 1
         current = came_from[current]
-        sum = current.weight + current.deg
-        if sum > 100:
-            mean += 100
-        else:
-            mean += sum
+        mean += current.get_risk()
         current.weight_increase()
         if(current != start):        
             current.make_path(color)
@@ -71,7 +67,7 @@ def algorithm(draw, grid, start, end):
                 if temp_g_score < g_score[neighbor]:
                     came_from[neighbor] = current
                     g_score[neighbor] = temp_g_score
-                    f_score[neighbor] = temp_g_score + h(neighbor.get_pos(), end.get_pos()) + current.weight + current.deg
+                    f_score[neighbor] = temp_g_score + h(neighbor.get_pos(), end.get_pos()) + current.get_risk()
                     if neighbor not in open_set_hash:
                         count += 1
                         open_set.put((f_score[neighbor], count, neighbor))
@@ -167,14 +163,16 @@ def main(win, width):
                 elif not end and node != start:
                     end = node
                     end.make_end()
+                '''    
                 elif node != end and node != start:
                     node.make_barrier()
-                    grid.update_danger_deg()
+                    grid.update_danger_deg()'''
             elif pygame.mouse.get_pressed()[2]:
                 pos = pygame.mouse.get_pos()
                 row, col = get_clicked_pos(pos, ROWS, width)
-                node = grid.grid[row][col]                
-                grid.reset_node(node)
+                node = grid.grid[row][col]
+                if not node.is_barrier():              
+                    grid.reset_node(node)
                 if node == start:
                     start = None
                 if node == end:

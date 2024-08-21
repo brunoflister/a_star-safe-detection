@@ -41,6 +41,12 @@ class Node:
     def get_pos(self):
         return self.row, self.col
     
+    def get_risk(self):
+        if self.weight + self.deg > 100:
+            return 100
+        else:
+            return self.weight + self.deg
+    
     def is_close(self):
         return self.color == RED
     
@@ -117,9 +123,7 @@ class Node:
             self.neighbors.append(grid[self.row][self.col - 1])
         
     def color_heat(self):
-        sum = self.deg + self.weight
-        if(sum > 100):
-            sum = 100
+        sum = self.get_risk()
         f = 1 - sum/100        
         base_color = np.array([173, 232, 244]) 
         scaled_color = base_color * f

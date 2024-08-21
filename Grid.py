@@ -2,7 +2,7 @@ import Node
 import random
 import numpy as np
 
-B_RATE = 0.1
+B_RATE = 0.05
 N_COEF = 5
 
 def g(p1, p2):

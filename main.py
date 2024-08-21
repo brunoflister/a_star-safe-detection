@@ -7,7 +7,6 @@ import Grid
 
 WIDTH = 800
 WIN = pygame.display.set_mode((WIDTH, WIDTH))
-B_RATE = 0.05
 c_state = 0
 
 pygame.display.set_caption("A* Path Finding Algorithm")

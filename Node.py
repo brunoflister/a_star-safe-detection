@@ -118,7 +118,7 @@ class Node:
         
     def color_heat(self):
         sum = self.deg + self.weight
-        if(sum >= 100):
+        if(sum > 100):
             sum = 100
         f = 1 - sum/100        
         base_color = np.array([173, 232, 244]) 

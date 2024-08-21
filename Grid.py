@@ -45,7 +45,7 @@ class Grid:
                     if node != obs:
                         list.append(round(1 /(N_COEF*g(node.get_pos(), obs.get_pos()) + 1) * 100, 2))
                 if list:
-                    node.deg += max(list)
+                    node.deg = max(list)
                     if node.deg >= 100:
                         node.deg = 100
                 node.color_heat()

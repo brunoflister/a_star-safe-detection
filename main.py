@@ -7,7 +7,7 @@ import Grid
 
 WIDTH = 800
 WIN = pygame.display.set_mode((WIDTH, WIDTH))
-B_RATE = 0.1
+B_RATE = 0.05
 c_state = 0
 
 pygame.display.set_caption("A* Path Finding Algorithm")
@@ -18,6 +18,8 @@ def h(p1,p2):
     return abs(x1-x2) + abs(y1-y2)
 
 def reconstruct_path(came_from, start, current, draw):
+    mean = 0
+    total = 0
     global c_state
     # Check if all predefined colors have been used
     if c_state < len(Node.colors):
@@ -26,11 +28,21 @@ def reconstruct_path(came_from, start, current, draw):
     else:
         color = list(np.random.choice(range(50, 200), size=3))    
     while current in came_from:
+        total += 1
         current = came_from[current]
+        sum = current.weight + current.deg
+        if sum > 100:
+            mean += 100
+        else:
+            mean += sum
         current.weight_increase()
         if(current != start):        
             current.make_path(color)
         draw()
+    print("Path Lenght:", total)
+    print("Path Risk Rate:", round(mean/total, 2), "%")
+    #print("\n")
+    
 
 def algorithm(draw, grid, start, end):
     count = 0
@@ -60,7 +72,7 @@ def algorithm(draw, grid, start, end):
                 if temp_g_score < g_score[neighbor]:
                     came_from[neighbor] = current
                     g_score[neighbor] = temp_g_score
-                    f_score[neighbor] = temp_g_score + h(neighbor.get_pos(), end.get_pos()) + current.weight
+                    f_score[neighbor] = temp_g_score + h(neighbor.get_pos(), end.get_pos()) + current.weight + current.deg
                     if neighbor not in open_set_hash:
                         count += 1
                         open_set.put((f_score[neighbor], count, neighbor))

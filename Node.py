@@ -88,6 +88,7 @@ class Node:
         self.color = color
         self.path_count += 1
         if(self.path_count > 2):
+            pass
             self.make_full()
     
     def draw(self, win):

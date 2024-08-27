@@ -54,6 +54,10 @@ class Grid:
             self.update_danger_deg()
         node.reset()
 
+    def make_barrier(self):
+        for barrier in self.obstacles:
+            barrier.make_barrier()
+
     def reset_grid(self):
         self.grid = self.make_grid()
         self.obstacles.clear()

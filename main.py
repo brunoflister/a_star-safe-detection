@@ -1,6 +1,6 @@
 import pygame
 import numpy as np
-import random
+import time
 from queue import PriorityQueue
 import Node
 import Grid
@@ -220,20 +220,26 @@ def main(win, width):
                 if event.key == pygame.K_SPACE and start and end:
                     for row in grid.grid:
                         for node in row:
-                            node.update_neighbors(grid.grid)                    
+                            node.update_neighbors(grid.grid)
+                    start_t = time.time()                         
                     algorithm(lambda: draw(win, grid, ROWS, width), grid, start, end)
+                    end_t = time.time()
+                    print("elapsed time: ", end_t - start_t)
                 if event.key == pygame.K_a and start and end:
                     for row in grid.grid:
                         for node in row:
-                            node.update_neighbors(grid.grid)                    
+                            node.update_neighbors(grid.grid)
+                    start_t = time.time()                      
                     algorithm_astar(lambda: draw(win, grid, ROWS, width), grid, start, end)
+                    end_t = time.time()
+                    print("elapsed time: ", end_t - start_t)
                 if event.key == pygame.K_h:
                     heat = not heat
                 if event.key == pygame.K_c:
                     start = None
                     end = None
                     grid.reset_grid()
-                    grid.random_barrier()
+                    grid.make_barrier()
                     grid.update_danger_deg()
 
     pygame.quit()

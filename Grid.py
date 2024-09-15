@@ -16,6 +16,7 @@ class Grid:
         self.width = width
         self.gap = width // row
         self.obstacles = []
+        self.barrier_coord = []
         self.danger = []
         self.grid = self.make_grid()
         
@@ -33,9 +34,10 @@ class Grid:
             x = random.randint(0, self.row - 1)
             y = random.randint(0, self.row - 1)
             node = self.grid[x][y]
+            self.barrier_coord.append((x,y))
             self.obstacles.append(node)
             node.make_barrier()
-    
+
     def update_danger_deg(self):
         for row in self.grid:
             for node in row:
@@ -55,10 +57,11 @@ class Grid:
         node.reset()
 
     def make_barrier(self):
-        for barrier in self.obstacles:
-            barrier.make_barrier()
+        for barrier in self.barrier_coord:
+            x,y = barrier
+            self.grid[x][y].make_barrier()
 
     def reset_grid(self):
         self.grid = self.make_grid()
-        self.obstacles.clear()
+        #self.obstacles.clear()
         self.danger.clear()
